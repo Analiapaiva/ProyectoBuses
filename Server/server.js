@@ -1,23 +1,34 @@
-const express = require('express');
-const mongoose = require('mongoose');
+const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+
 const app = express();
-const PORT = process.env.PORT || 8080;
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
+const PORT = 8000;
+
+// Configuración de CORS
+const corsOptions = {
+    credentials: true,
+    origin: "http://localhost:3000",
+    methods: "GET, POST, PUT, PATCH, DELETE",
+};
+app.use(cors(corsOptions));
 
 // Middleware
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+// Conexión a la base de datos
+require("./config/mongoose.config");
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/Usuarios')
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  })
-  .catch(err => console.error('Error connecting to MongoDB', err));
+// Rutas
+const UserRouter = require("./routes/user.routes");
+app.use("/api/auth", UserRouter);
+const busRoutes = require('./routes/bus.routes');
+app.use('/api/bus', busRoutes);
+const reservaRoutes = require('./routes/reserva.routes');
+app.use('/api/reservas', reservaRoutes);
+
+
+// Inicio del servidor
+app.listen(PORT, () => console.log(`Servidor en funcionamiento en el puerto: ${PORT}`));

@@ -1,38 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'
-
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { UserContext } from '../context/UserContext';
 
 const Login = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const { setUser } = useContext(UserContext);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        // Validar que se haya ingresado un email
+
+        // Validaciones
         if (!email) {
             setError('Ingrese su Correo');
             return;
         }
-        // Validar que se haya ingresado una contraseña
+
         if (!password) {
             setError('Ingrese su Contraseña');
             return;
         }
-        // Validar que la contraseña tenga al menos 6 caracteres
+
         if (password.length < 6) {
             setError('La contraseña debe tener al menos 6 caracteres');
             return;
         }
-        // Aquí puedes agregar la lógica para enviar los datos del formulario a tu backend para autenticar al usuario
-        console.log('Email:', email);
-        console.log('Password:', password);
-        // Luego de enviar los datos, puedes redirigir al usuario a otra página o mostrar un mensaje de éxito
-    };
 
+        try {
+            const response = await axios.post('http://localhost:8000/api/auth/login', { email, password });
+            console.log('Datos del usuario:', response.data);
+            setUser(response.data.user);
+            localStorage.setItem('user', JSON.stringify(response.data.user)); // Guardar en localStorage
+            // Redirigir al usuario a otra página después de un inicio de sesión exitoso
+            navigate('/BusSearch');
+        } catch (error) {
+            console.error('Error al iniciar sesión:', error);
+            setError('Error al iniciar sesión. Verifique sus credenciales.');
+        }
+    };
     return (
         <div className="container mt-5">
             <h2 className="mb-4">Login</h2>
@@ -57,14 +67,12 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </Form.Group>
-                <div className='d-flex align-items-center justify-content-between '> 
-                <Button variant="primary" type="submit"  onClick={() => navigate("/BusSearch")}>
-                Submit
-                </Button>
-              <a href=''     onClick={() => navigate("/Registro")}> No estas registrado</a>
-
+                <div className='d-flex align-items-center justify-content-between'> 
+                    <Button variant="primary" type="submit">
+                        Submit
+                    </Button>
+                    <a href='#' onClick={() => navigate("/Registro")}>No estas registrado</a>
                 </div>
-
             </Form>
         </div>
     );

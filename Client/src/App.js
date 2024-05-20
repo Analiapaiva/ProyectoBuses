@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import Login from './components/Login';
 //import Signup from './Signup';
+import { locations } from './utils';
 import Header from './components/Header';
 import BusSearch from './components/BusSearch';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"
 import "./App.css"
-import { locations } from './utils';
-import BusLayout from './components/BusLayout';
-import BookingForm from './components/BookingForm';
 import Registro from './components/Registro';
 import RegisBus from './components/RegisBus';
+import { UserProvider } from "./context/UserContext";
+import PublicRoute from "./components/PublicRoute";
+import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
+import BusLayout from './components/BusLayout';
+import ReservationCreate from './components/ReservationCreate';
+import MisReservas from './components/MisReservas';
+import Reservas from './components/AllReservas';
 
 
 function App() {
@@ -20,31 +26,23 @@ function App() {
     date: '',
   });
 
-
-  const [selectedSeats, setSelectedSeats] = useState([])
   return (
     <div>
-      <Header />
+      <UserProvider>
       <BrowserRouter>
+      <Header />
         <Routes>
-          <Route path='/' element={<Login/>}></Route>
-          <Route path='/Registro' element={<Registro/>}></Route>
-          <Route path='/BusSearch' element={<BusSearch searchState={searchState} setSearchState={setSearchState} />} />
-          <Route path='/RegisBus' element={<RegisBus/>}></Route>
-
-
-          <Route path='/bus/:id' element={<BusLayout selectedSeats={selectedSeats} setSelectedSeats={setSelectedSeats} />} />
-
-          <Route path='/bus/book'
-            element={<BookingForm
-              selectedSeats={selectedSeats}
-              searchState={searchState}
-              setSelectedSeats={setSelectedSeats}
-              setSearchState={setSearchState}
-
-            />} />
+          <Route path='/' element={<PublicRoute><Login /></PublicRoute>}></Route>
+          <Route path='/Registro' element={<PublicRoute><Registro/></PublicRoute>}></Route>
+          <Route path='/BusSearch' element={<PrivateRoute><BusSearch searchState={searchState} setSearchState={setSearchState} /></PrivateRoute>}></Route>
+          <Route path='/RegisBus' element={<AdminRoute><RegisBus/></AdminRoute>}></Route>
+          <Route path='/bus/:id'  element={<PrivateRoute><BusLayout/></PrivateRoute>}></Route>
+          <Route path='/reservas/crear/:busId' element={<PrivateRoute><ReservationCreate/></PrivateRoute>}></Route>
+          <Route path='/mis-reservas' element={<PrivateRoute><MisReservas/></PrivateRoute>}></Route>
+          <Route path='/AllReservas' element={<PrivateRoute><Reservas/></PrivateRoute>}></Route>
         </Routes>
       </BrowserRouter>
+      </UserProvider>
     </div>
   );
 }
